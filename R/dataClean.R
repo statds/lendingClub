@@ -9,11 +9,12 @@ qID <- eval(parse(text = args[1L]))
 
 
 ## attach functions
+source("../utils_template.R")
 source("functions.R")
 
 
 ## attach package needed
-ipak("stringi")
+need.packages("stringi")
 
 
 ### import csv file

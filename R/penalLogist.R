@@ -5,11 +5,14 @@
 
 
 ## source functions
+source("../utils_template.R")
 source("functions.R")
 
+
 ## attach packages needed (will install any missing package automatically)
-needpack <- c("glmnet", "pROC", "ggplot2", "grDevices")
-ipak(needpack)
+packs <- c("glmnet", "pROC", "ggplot2", "grDevices")
+need.packages(packs)
+
 
 ## load processed data
 load("../cleanData/loanQ3.RData")
