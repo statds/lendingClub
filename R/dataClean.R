@@ -19,7 +19,7 @@ need.packages("stringi")
 
 ### import csv file
 ## need skip the first line url and and last four useless rows
-rawDatFile <- paste0("../data/LoanStats_2016Q", qID, ".csv")
+rawDatFile <- paste0("../rawData/LoanStats_2016Q", qID, ".csv")
 nRow <- system(paste("wc -l", rawDatFile), intern = TRUE)
 ## exclude the frist row, header, and last four rows (totally 6 rows)
 nRow <- as.numeric(strsplit(nRow, split = " ")[[1]][1]) - 6L
@@ -27,7 +27,10 @@ loan <- rawDat <- read.table(rawDatFile, header = TRUE, sep = ",",
                              skip = 1, nrows = nRow)
 rawName <- paste0("rawDat", qID)
 assign(rawName, rawDat)
-save(list = rawName, file = paste0("../cleanData/rawDat", qID, ".RData"))
+
+outDir <- "../cleanData"
+if (! dir.exists(outDir)) dir.create(outDir)
+save(list = rawName, file = paste0(file.path(outDir, rawName), ".RData"))
 rm(rawDat, list = rawName); gc()
 
 
@@ -68,19 +71,23 @@ with(loan, summary(loan_amnt - funded_amnt_inv))
 loan$funded_amnt <- NULL                 # remove funded_amnt
 loan$y <- as.integer(with(loan, loan_amnt == funded_amnt_inv))
 
+
 ## rate of loan getting fully funded
 mean(loan$y)
 ## 0.9709342, pretty high
 ## the correct prediction rate is supposed to be higher than this number?
 
+
 ## term
 with(loan, table(term))
+
 
 ## normalize loan_amnt, installment, revol_bal, last_pymnt_amnt
 loan$loan_amnt <- scale01(loan$loan_amnt)
 loan$installment <- scale01(loan$installment)
 loan$revol_bal <- scale01(loan$revol_bal)
 loan$last_pymnt_amnt <- scale01(loan$last_pymnt_amnt)
+
 
 ## re-scale int_rate: Interest Rate on the loan
 ## by maximum-minimum standardization
@@ -89,6 +96,7 @@ summary(loan$int_rate0)
 loan$int_rate0 <- scale01(loan$int_rate0)
 ## remove useless variables
 loan$int_rate <- NULL
+
 
 ## either grade or sub_grade should be used, not of both of them
 ## or convert them into numeric scale since the relationship
@@ -124,11 +132,12 @@ titleList <- gsub(nonLetters, " ", loan$emp_title)
 ## job titles in words for each loan
 titleList <- stri_split_regex(titleList, " ", omit_empty = TRUE)
 
+
 ## divide jobs into 10 different groups based on mog
 mogList <- grepMog()
 mog <- mogScore(titleList, mogList)
 loan$mog <- factor(mog, levels = seq_len(10),
-                     labels = c(letters[c(seq_len(8L), 11L)], "others"))
+                   labels = c(letters[c(seq_len(8L), 11L)], "others"))
 (tmpTab <- table(loan$mog))
 prop.table(tmpTab) * 100
 
@@ -137,9 +146,10 @@ prop.table(tmpTab) * 100
 (tmpTab <- table(loan$purpose))
 prop.table(tmpTab) * 100
 
+
 ## only 1 wedding, and 70 renewable_energy, so merge them to group other
 loan$purpose <- ifelse(loan$purpose %in% c("wedding", "renewable_energy"),
-                         "other", as.character(loan$purpose))
+                       "other", as.character(loan$purpose))
 loan$purpose <- factor(loan$purpose)
 ## relevel purpose by "debt_consolidation"
 loan$purpose <- relevel(loan$purpose, ref = "debt_consolidation")
@@ -151,26 +161,22 @@ table(loan$emp_length)
 
 ### home_ownership
 loan$home_ownership <- tolower(loan$home_ownership)
-
 xtabs(~ y + home_ownership, data = loan)
-##    home_ownership
-## y     any mortgage   own  rent
-##   0     0     1365   343  1173
-##   1     6    45396 11982 38855
+
 
 ## remove 6 any cases or combine them with mortgage?
 ## loan <- subset(loan, ! home_ownership %in% "any")
 ## let's combine them with mortgage
 loan$home_ownership <- ifelse(loan$home_ownership == "any", "mortgage",
-                                as.character(loan$home_ownership))
+                              as.character(loan$home_ownership))
 loan$home_ownership <- factor(loan$home_ownership)
+
 
 ## annual_inc, take log(x + 1) and standardize it
 loan$annual_inc <- as.numeric(scale01(log1p(loan$annual_inc)))
 
 
 ### save the processed loana
-if (! dir.exists("../cleanData")) dir.create("../cleanData")
 outName <- paste0("loanQ", qID)
 assign(outName, loan)
-save(list = outName, file = paste0("../cleanData/", outName, ".RData"))
+save(list = outName, file = paste0(file.path(outDir, outName), ".RData"))

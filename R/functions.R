@@ -4,7 +4,8 @@
 
 
 ## function for maximum-minimum standardization
-scale01 <- function(x, ...) {
+scale01 <- function(x, ...)
+{
     (x - min(x)) / diff(range(x))
 }
 
@@ -12,9 +13,10 @@ scale01 <- function(x, ...) {
 ## function determining the major occupational group (MOG) from emp_title
 ## reference U.S. Standard Occupational Classification System
 ## reference url: http://www.job-analysis.net/G010.htm
-grepMog <- function() {
+grepMog <- function()
+{
     ## MOG urls
-    mogUrls <- paste0("http://www.bls.gov/ncs/ocs/ocsm/comMog",
+    mogUrls <- paste0("https://www.bls.gov/ncs/ocs/ocsm/comMog",
                       letters[c(seq_len(8L), 11L)], ".Htm")
     grep1mog <- function(mogUrl) {
         tx <- readLines(mogUrl)
@@ -41,7 +43,8 @@ grepMog <- function() {
 
 
 ## function that helps matching emp_title with nine mog's
-mogScore <- function(empTitleList, mogList) {
+mogScore <- function(empTitleList, mogList)
+{
     ## grep each word in empTitleList and count the matchs from each mog
     ## sum up the score of each word as the final score of emp_title for mog's
     ## pick up the mog with the largest score
@@ -72,7 +75,8 @@ mogScore <- function(empTitleList, mogList) {
 
 ## function generating design matrix for glmnet from specified model formula
 glmnet2 <- function(formula, data, subset, na.action,
-                    contrasts = NULL, predOnly = FALSE, ...) {
+                    contrasts = NULL, predOnly = FALSE, ...)
+{
     ## arguments check
     if (missing(formula))
         stop("Argument 'formula' is required.")
@@ -99,7 +103,8 @@ glmnet2 <- function(formula, data, subset, na.action,
 
 
 ## function that makes prediction
-predict2 <- function(object, glmnetObj, newx, ...) {
+predict2 <- function(object, glmnetObj, newx, ...)
+{
     if (missing(newx))
         newx <- object[[1L]]
     if (missing(glmnetObj))
@@ -110,7 +115,8 @@ predict2 <- function(object, glmnetObj, newx, ...) {
 
 
 ## hue function
-gg_color_hue <- function(n) {
+gg_color_hue <- function(n)
+{
     hues <- seq(15, 375, length = n + 1)
     grDevices::hcl(h = hues, l = 65, c = 100)[seq_len(n)]
 }
@@ -127,7 +133,8 @@ gg_color_hue <- function(n) {
 ## then plot 1 will go in the upper left, 2 will go in the upper right, and
 ## 3 will go all the way across the bottom.
 ##
-multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL)
+{
     library(grid)
 
     ## Make a list from the ... arguments and plotlist
